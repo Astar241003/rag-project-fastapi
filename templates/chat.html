@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat</title>
+
+<style>
+    :root {
+        --primary: #D84315;
+        --secondary: #FF9800;
+        --accent: #00BCD4;
+        --dark-bg: #0D2818;
+        --dark-card: #1a3d2a;
+        --dark-text: #90EE90;
+        --light-bg: #F5E6D3;
+        --light-card: #FFFAF0;
+        --light-text: #3E2723;
+        --shadow-dark: 0 8px 32px rgba(144, 238, 144, 0.15);
+        --shadow-light: 0 8px 32px rgba(216, 67, 21, 0.12);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: 'Courier New', monospace;
+        background: var(--light-bg);
+        color: var(--light-text);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        transition: background-color 0.4s ease, color 0.4s ease;
+    }
+
+    body.dark-mode {
+        background: var(--dark-bg);
+        color: var(--dark-text);
+    }
+
+    /* ================= THEME TOGGLE ================= */
+
+    .theme-toggle {
+        position: fixed;
+        top: 20px;
+        right: 85px;
+        width: 45px;
+        height: 45px;
+        border: 3px solid var(--primary);
+        background: var(--light-card);
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 20px;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-light);
+        z-index: 100;
+    }
+
+    body.dark-mode .theme-toggle {
+        background: var(--dark-card);
+        border-color: var(--accent);
+        box-shadow: var(--shadow-dark);
+    }
+
+    .theme-toggle:hover {
+        transform: rotate(20deg) scale(1.1);
+    }
+
+    .theme-toggle:active {
+        transform: rotate(20deg) scale(0.95);
+    }
+
+    /* ================= HEADER ================= */
+
+    .header {
+        height: 60px;
+        background: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 25px 0 25px;
+        padding-right: 80px;
+        box-shadow: 0 4px 12px rgba(216, 67, 21, 0.2);
+        border-bottom: 3px solid var(--secondary);
+        position: relative;
+    }
+
+    body.dark-mode .header {
+        background: var(--dark-card);
+        border-bottom-color: var(--accent);
+        box-shadow: 0 4px 12px rgba(144, 238, 144, 0.1);
+    }
+
+    .header h2 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    body.dark-mode .header h2 {
+        color: var(--dark-text);
+        text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+    }
+
+    .logout-btn {
+        width: auto;
+        padding: 8px 15px;
+        background: var(--secondary);
+        color: white;
+        font-size: 13px;
+        cursor: pointer;
+        border: 2px solid var(--secondary);
+        border-radius: 6px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-family: 'Courier New', monospace;
+        transition: all 0.3s ease;
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    body.dark-mode .logout-btn {
+        background: var(--accent);
+        border-color: var(--accent);
+    }
+
+    .logout-btn:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    .logout-btn:active {
+        transform: translate(0, 0);
+    }
+
+    /* ================= MAIN ================= */
+
+    .main-container {
+        flex: 1;
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+        min-height: 0;
+    }
+
+    /* Create a right section wrapper for admin and files */
+    .right-section {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: 360px;
+        min-width: 0;
+    }
+
+    /* ================= CHAT ================= */
+
+    .chat-container {
+        flex: 1;
+        background: var(--light-card);
+        border-radius: 10px;
+        box-shadow: var(--shadow-light);
+        border: 3px solid var(--primary);
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    body.dark-mode .chat-container {
+        background: var(--dark-card);
+        box-shadow: var(--shadow-dark);
+        border-color: var(--accent);
+    }
+
+    .chat-header {
+        padding: 18px 20px;
+        border-bottom: 2px solid var(--primary);
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--primary);
+    }
+
+    body.dark-mode .chat-header {
+        border-bottom-color: var(--accent);
+        color: var(--accent);
+    }
+
+    .messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .message {
+        max-width: 75%;
+        padding: 12px 15px;
+        border-radius: 8px;
+        line-height: 1.5;
+        font-size: 14px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        border: 2px solid;
+    }
+
+    .human {
+        align-self: flex-end;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        border-color: var(--primary);
+        border-bottom-right-radius: 2px;
+    }
+
+    .ai {
+        align-self: flex-start;
+        background: rgba(216, 67, 21, 0.1);
+        color: var(--light-text);
+        border-color: var(--primary);
+        border-bottom-left-radius: 2px;
+    }
+
+    body.dark-mode .ai {
+        background: rgba(0, 188, 212, 0.1);
+        color: var(--dark-text);
+        border-color: var(--accent);
+    }
+
+    .typing {
+        color: var(--primary);
+        font-style: italic;
+        font-weight: bold;
+    }
+
+    body.dark-mode .typing {
+        color: var(--accent);
+    }
+
+    /* ================= CHAT INPUT ================= */
+
+    .chat-input-area {
+        display: flex;
+        gap: 10px;
+        padding: 15px;
+        border-top: 2px solid var(--primary);
+    }
+
+    body.dark-mode .chat-input-area {
+        border-top-color: var(--accent);
+    }
+
+    .chat-input {
+        flex: 1;
+        padding: 12px;
+        border: 2px solid var(--primary);
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: 'Courier New', monospace;
+        background: white;
+        color: var(--light-text);
+        transition: all 0.3s ease;
+        box-shadow: 2px 2px 0 rgba(216, 67, 21, 0.1);
+    }
+
+    body.dark-mode .chat-input {
+        background: rgba(144, 238, 144, 0.05);
+        border-color: var(--accent);
+        color: var(--dark-text);
+        box-shadow: 2px 2px 0 rgba(0, 188, 212, 0.1);
+    }
+
+    .chat-input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 15px rgba(0, 188, 212, 0.3);
+        transform: translate(-2px, -2px);
+    }
+
+    .send-btn {
+        width: auto;
+        padding: 0 20px;
+    }
+
+    .send-btn {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        border: 2px solid var(--primary);
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-family: 'Courier New', monospace;
+        transition: all 0.3s ease;
+        box-shadow: 3px 3px 0 rgba(216, 67, 21, 0.2);
+    }
+
+    body.dark-mode .send-btn {
+        background: linear-gradient(135deg, var(--accent), #90EE90);
+        border-color: var(--accent);
+        box-shadow: 3px 3px 0 rgba(144, 238, 144, 0.2);
+    }
+
+    .send-btn:hover:not(:disabled) {
+        transform: translate(-2px, -2px);
+    }
+
+    .send-btn:active:not(:disabled) {
+        transform: translate(0, 0);
+    }
+
+    .send-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    /* ================= INGESTION ================= */
+
+    .ingestion-container {
+        width: 100%;
+        background: var(--light-card);
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: var(--shadow-light);
+        border: 3px solid var(--primary);
+        height: fit-content;
+        max-height: 500px;
+        overflow-y: auto;
+        transition: all 0.4s ease;
+    }
+
+    body.dark-mode .ingestion-container {
+        background: var(--dark-card);
+        box-shadow: var(--shadow-dark);
+        border-color: var(--accent);
+    }
+
+    /* ================= FILES CONTAINER ================= */
+
+    .files-container {
+        width: 100%;
+        background: var(--light-card);
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: var(--shadow-light);
+        border: 3px solid var(--primary);
+        height: fit-content;
+        max-height: 500px;
+        overflow-y: auto;
+        transition: all 0.4s ease;
+    }
+
+    body.dark-mode .files-container {
+        background: var(--dark-card);
+        box-shadow: var(--shadow-dark);
+        border-color: var(--accent);
+    }
+
+    .files-container h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 16px;
+    }
+
+    body.dark-mode .files-container h3 {
+        color: var(--accent);
+    }
+
+    .files-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 400px;
+        overflow-y: auto;
+        scrollbar-gutter: stable;
+        padding-right: 5px;
+    }
+
+    .file-item {
+        padding: 10px;
+        background: rgba(216, 67, 21, 0.08);
+        border: 1px solid var(--primary);
+        border-radius: 6px;
+        font-size: 13px;
+        word-break: break-word;
+        transition: all 0.3s ease;
+        cursor: default;
+        color: var(--light-text);
+        font-weight: 600;
+    }
+
+    body.dark-mode .file-item {
+        background: rgba(0, 188, 212, 0.08);
+        border-color: var(--accent);
+        color: var(--dark-text);
+    }
+
+    .file-item:hover {
+        background: rgba(216, 67, 21, 0.15);
+        box-shadow: inset 0 0 8px rgba(216, 67, 21, 0.2);
+    }
+
+    body.dark-mode .file-item:hover {
+        background: rgba(0, 188, 212, 0.15);
+        box-shadow: inset 0 0 8px rgba(0, 188, 212, 0.2);
+    }
+
+    .file-name {
+        color: var(--primary);
+    }
+
+    body.dark-mode .file-name {
+        color: var(--accent);
+    }
+
+    .files-loading {
+        font-size: 12px;
+        color: var(--primary);
+        text-align: center;
+        padding: 20px 10px;
+        font-style: italic;
+    }
+
+    body.dark-mode .files-loading {
+        color: var(--accent);
+    }
+
+    .files-empty {
+        font-size: 12px;
+        color: var(--light-text);
+        text-align: center;
+        padding: 20px 10px;
+        opacity: 0.6;
+    }
+
+    .ingestion-container h3 {
+        margin-top: 0;
+        margin-bottom: 8px;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 16px;
+    }
+
+    body.dark-mode .ingestion-container h3 {
+        color: var(--accent);
+    }
+
+    .ingestion-description {
+        color: var(--light-text);
+        font-size: 13px;
+        line-height: 1.5;
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+
+    body.dark-mode .ingestion-description {
+        color: #90EE90;
+    }
+
+    .file-input {
+        width: 100%;
+        margin-bottom: 15px;
+        padding: 8px;
+        border: 2px solid var(--primary);
+        border-radius: 6px;
+        font-family: 'Courier New', monospace;
+        cursor: pointer;
+        font-size: 12px;
+    }
+
+    body.dark-mode .file-input {
+        border-color: var(--accent);
+        background: rgba(0, 188, 212, 0.05);
+        color: var(--dark-text);
+    }
+
+    .upload-btn {
+        width: 100%;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        border: 2px solid var(--primary);
+        padding: 12px;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-family: 'Courier New', monospace;
+        transition: all 0.3s ease;
+        box-shadow: 3px 3px 0 rgba(216, 67, 21, 0.2);
+        font-size: 13px;
+    }
+
+    body.dark-mode .upload-btn {
+        background: linear-gradient(135deg, var(--accent), #90EE90);
+        border-color: var(--accent);
+        box-shadow: 3px 3px 0 rgba(144, 238, 144, 0.2);
+    }
+
+    .upload-btn:hover:not(:disabled) {
+        transform: translate(-2px, -2px);
+    }
+
+    .upload-btn:active:not(:disabled) {
+        transform: translate(0, 0);
+    }
+
+    .upload-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .upload-status {
+        margin-top: 15px;
+        font-size: 13px;
+        display: none;
+        padding: 10px;
+        border: 2px solid var(--primary);
+        border-radius: 6px;
+        background: rgba(216, 67, 21, 0.1);
+        color: var(--primary);
+        font-weight: bold;
+    }
+
+    body.dark-mode .upload-status {
+        border-color: var(--accent);
+        background: rgba(0, 188, 212, 0.1);
+        color: var(--accent);
+    }
+
+    .admin-label {
+        display: inline-block;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        font-size: 11px;
+        padding: 6px 10px;
+        border-radius: 4px;
+        margin-bottom: 12px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    /* ================= DISABLED USER PANEL ================= */
+
+    .disabled-panel {
+        opacity: 0.55;
+    }
+
+    .disabled-message {
+        font-size: 12px;
+        color: #D84315;
+        margin-top: 12px;
+        padding: 10px;
+        background: rgba(216, 67, 21, 0.1);
+        border: 1px dashed #D84315;
+        border-radius: 6px;
+        text-align: center;
+        font-weight: 600;
+    }
+
+    body.dark-mode .disabled-message {
+        background: rgba(0, 188, 212, 0.1);
+        border-color: #00BCD4;
+        color: #00BCD4;
+    }
+
+    /* ================= RESPONSIVE ================= */
+
+    @media (max-width: 800px) {
+        .main-container {
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .chat-container {
+            min-height: 500px;
+        }
+
+        .right-section {
+            width: 100%;
+        }
+
+        .ingestion-container {
+            max-height: none;
+        }
+
+        .files-container {
+            max-height: none;
+        }
+
+        .theme-toggle {
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+            top: 15px;
+            right: 75px;
+        }
+
+        .header {
+            padding-right: 70px;
+        }
+    }
+</style>
+
+</head>
+
+<body>
+
+<!-- Theme Toggle Button -->
+<button class="theme-toggle" id="themeToggle">🌙</button>
+
+<!-- HEADER -->
+<div class="header">
+    <h2>AI Document Assistant</h2>
+
+    <button class="logout-btn" id="logoutBtn">
+        Logout
+    </button>
+</div>
+
+
+<!-- MAIN -->
+<div class="main-container">
+
+    <!-- ================= CHAT ================= -->
+
+    <div class="chat-container">
+
+        <div class="chat-header">
+            AI Assistant
+        </div>
+
+        <div class="messages" id="messages">
+
+            <div class="message ai">
+                Hello! Ask me anything about the documents.
+            </div>
+
+        </div>
+
+        <div class="chat-input-area">
+
+            <input
+                type="text"
+                id="chatInput"
+                class="chat-input"
+                placeholder="Ask something..."
+                autocomplete="off"
+            >
+
+            <button
+                id="sendBtn"
+                class="send-btn"
+            >
+                Send
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= RIGHT SECTION ================= -->
+
+    <div class="right-section">
+
+        <!-- ================= INGESTION ================= -->
+
+        <div
+            class="ingestion-container"
+            id="ingestionContainer"
+        >
+
+            <span class="admin-label">
+                ADMIN
+            </span>
+
+            <h3>Document Ingestion</h3>
+
+            <div class="ingestion-description">
+                Upload documents to add them to the knowledge base.
+                Only administrators can perform document ingestion.
+            </div>
+
+            <input
+                type="file"
+                id="documentInput"
+                class="file-input"
+                accept=".pdf,.txt,.doc,.docx,.html"
+            >
+
+            <button
+                id="uploadBtn"
+                class="upload-btn"
+            >
+                Upload Document
+            </button>
+
+            <div
+                id="uploadStatus"
+                class="upload-status"
+            ></div>
+
+            <div
+                id="disabledMessage"
+                class="disabled-message"
+            >
+                You must be an administrator to upload documents.
+            </div>
+
+        </div>
+
+        <!-- ================= RECENT UPLOADS ================= -->
+
+        <div class="files-container">
+            <h3>Recent Uploads</h3>
+            <div class="files-list" id="filesList">
+                <div class="files-loading">Loading files...</div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    /* =========================================================
+       THEME TOGGLE
+    ========================================================= */
+
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+
+    const currentTheme = localStorage.getItem('theme') || 'light-mode';
+    if (currentTheme === 'dark-mode') {
+        body.classList.add('dark-mode');
+        themeToggle.textContent = '☀️';
+    }
+
+    themeToggle.addEventListener('click', () => {
+        body.classList.toggle('dark-mode');
+        const theme = body.classList.contains('dark-mode') ? 'dark-mode' : 'light-mode';
+        localStorage.setItem('theme', theme);
+        themeToggle.textContent = theme === 'dark-mode' ? '☀️' : '🌙';
+    });
+
+    /* =========================================================
+       AUTH
+    ========================================================= */
+
+    const accessToken = localStorage.getItem("access_token");
+    const user_role = localStorage.getItem("user_role");
+
+    /*
+     * If there is no token, the user is not authenticated.
+     */
+    if (!accessToken) {
+        window.location.href = "/login";
+    }
+
+
+    /* =========================================================
+       CHAT ELEMENTS
+    ========================================================= */
+
+    const messages = document.getElementById("messages");
+    const chatInput = document.getElementById("chatInput");
+    const sendBtn = document.getElementById("sendBtn");
+
+
+    /* =========================================================
+       ADD MESSAGE
+    ========================================================= */
+
+    function addMessage(text, type) {
+
+        const message = document.createElement("div");
+
+        message.classList.add(
+            "message",
+            type
+        );
+
+        message.textContent = text;
+
+        messages.appendChild(message);
+
+        messages.scrollTop = messages.scrollHeight;
+
+        return message;
+    }
+
+
+    /* =========================================================
+       SEND CHAT
+    ========================================================= */
+    async function sendMessage() {
+
+        const userInput = chatInput.value.trim();
+
+        if (!userInput) {
+            return;
+        }
+
+        /*
+         * Show human message
+         */
+        addMessage(userInput, "human");
+
+        chatInput.value = "";
+
+        /*
+         * Disable button while request is running
+         */
+        sendBtn.disabled = true;
+
+        /*
+         * Create AI message that we'll stream into
+         */
+        const aiMessage = addMessage("", "ai");
+
+        try {
+
+            const response = await fetch(
+                `/api/chat?user_input=${encodeURIComponent(userInput)}`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Authorization": `Bearer ${accessToken}`
+                    }
+                }
+            );
+
+            /*
+             * Authentication expired
+             */
+            if (response.status === 401) {
+
+                localStorage.removeItem("access_token");
+                localStorage.removeItem("user_role");
+
+                window.location.href = "/login";
+
+                return;
+            }
+
+            /*
+             * Other API error
+             */
+            if (!response.ok) {
+
+                const data = await response.json();
+
+                aiMessage.textContent =
+                    data.detail || "Something went wrong.";
+
+                return;
+            }
+
+            /*
+             * Read streaming response
+             */
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let fullResponse = "";
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value);
+                fullResponse += chunk;
+                aiMessage.textContent = fullResponse;
+
+                // Auto-scroll as chunks arrive
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+        } catch (error) {
+
+            aiMessage.textContent =
+                "Unable to connect to the server.";
+
+            console.error(error);
+
+        } finally {
+
+            sendBtn.disabled = false;
+
+            chatInput.focus();
+        }
+    }
+
+
+    /* =========================================================
+       SEND BUTTON
+    ========================================================= */
+
+    sendBtn.addEventListener(
+        "click",
+        sendMessage
+    );
+
+
+    /* =========================================================
+       ENTER KEY
+    ========================================================= */
+
+    chatInput.addEventListener(
+        "keydown",
+        function(event) {
+
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
+
+                event.preventDefault();
+
+                sendMessage();
+            }
+
+        }
+    );
+
+
+    /* =========================================================
+       DOCUMENT INGESTION
+    ========================================================= */
+
+    const ingestionContainer =
+        document.getElementById("ingestionContainer");
+
+    const documentInput =
+        document.getElementById("documentInput");
+
+    const uploadBtn =
+        document.getElementById("uploadBtn");
+
+    const uploadStatus =
+        document.getElementById("uploadStatus");
+
+    const disabledMessage =
+        document.getElementById("disabledMessage");
+
+    const filesList =
+        document.getElementById("filesList");
+
+
+    /*
+     * Admin gets access to ingestion.
+     */
+    if (user_role === "admin") {
+
+        uploadBtn.disabled = false;
+        documentInput.disabled = false;
+
+        disabledMessage.style.display = "none";
+
+    }
+
+    /*
+     * Normal user cannot upload.
+     */
+    else {
+
+        ingestionContainer.classList.add(
+            "disabled-panel"
+        );
+
+        uploadBtn.disabled = true;
+        documentInput.disabled = true;
+
+        disabledMessage.style.display = "block";
+    }
+
+
+    /* =========================================================
+       LOAD FILES FROM API
+    ========================================================= */
+
+    async function loadFiles() {
+        try {
+            const response = await fetch("/api/files", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`
+                }
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    localStorage.removeItem("access_token");
+                    localStorage.removeItem("user_role");
+                    window.location.href = "/login";
+                    return;
+                }
+                throw new Error("Failed to load files");
+            }
+
+            const data = await response.json();
+
+            if (data.status === "success" && data.files) {
+                displayFiles(data.files);
+            } else {
+                displayEmptyFiles();
+            }
+
+        } catch (error) {
+            console.error("Error loading files:", error);
+            displayEmptyFiles();
+        }
+    }
+
+    function displayFiles(files) {
+        filesList.innerHTML = "";
+
+        if (files.length === 0) {
+            displayEmptyFiles();
+            return;
+        }
+
+        files.forEach(file => {
+            const fileItem = document.createElement("div");
+            fileItem.className = "file-item";
+
+            const fileName = document.createElement("div");
+            fileName.className = "file-name";
+            fileName.textContent = file.filename;
+
+            fileItem.appendChild(fileName);
+
+            filesList.appendChild(fileItem);
+        });
+    }
+
+    function displayEmptyFiles() {
+        filesList.innerHTML = '<div class="files-empty">No files uploaded yet</div>';
+    }
+
+    // Load files on page load
+    loadFiles();
+
+
+    /* =========================================================
+       UPLOAD DOCUMENT
+    ========================================================= */
+
+    uploadBtn.addEventListener(
+        "click",
+        async function() {
+
+            const file =
+                documentInput.files[0];
+
+            if (!file) {
+
+                uploadStatus.textContent =
+                    "Please select a document.";
+
+                uploadStatus.style.display =
+                    "block";
+
+                return;
+            }
+
+
+            const formData =
+                new FormData();
+
+            formData.append(
+                "file",
+                file
+            );
+
+
+            uploadBtn.disabled = true;
+
+            uploadStatus.textContent =
+                "Uploading...";
+
+            uploadStatus.style.display =
+                "block";
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/ingest",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Authorization":
+                                    `Bearer ${accessToken}`
+                            },
+
+                            body: formData
+                        }
+                    );
+
+
+                /*
+                 * Authentication expired
+                 */
+                if (response.status === 401) {
+
+                    localStorage.removeItem(
+                        "access_token"
+                    );
+
+                    localStorage.removeItem(
+                        "user_role"
+                    );
+
+                    window.location.href =
+                        "/login";
+
+                    return;
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    uploadStatus.textContent =
+                        data.detail ||
+                        "Document upload failed.";
+
+                    return;
+                }
+
+
+                uploadStatus.textContent =
+                    "Document uploaded successfully.";
+
+                documentInput.value = "";
+
+                // Reload files list after successful upload
+                setTimeout(() => {
+                    loadFiles();
+                }, 500);
+
+
+            } catch (error) {
+
+                uploadStatus.textContent =
+                    "Unable to connect to the server.";
+
+                console.error(error);
+
+            } finally {
+
+                uploadBtn.disabled = false;
+            }
+
+        }
+    );
+
+
+    /* =========================================================
+       LOGOUT
+    ========================================================= */
+
+    document
+        .getElementById("logoutBtn")
+        .addEventListener(
+            "click",
+            function() {
+
+                localStorage.removeItem(
+                    "access_token"
+                );
+
+                localStorage.removeItem(
+                    "user_role"
+                );
+
+                window.location.href =
+                    "/login";
+            }
+        );
+
+</script>
+
+</body>
+</html>

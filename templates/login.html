@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+
+<style>
+    :root {
+        --primary: #D84315;
+        --secondary: #FF9800;
+        --accent: #00BCD4;
+        --dark-bg: #0D2818;
+        --dark-card: #1a3d2a;
+        --dark-text: #90EE90;
+        --light-bg: #F5E6D3;
+        --light-card: #FFFAF0;
+        --light-text: #3E2723;
+        --shadow-dark: 0 8px 32px rgba(144, 238, 144, 0.15);
+        --shadow-light: 0 8px 32px rgba(216, 67, 21, 0.12);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: 'Courier New', monospace;
+        background: var(--light-bg);
+        color: var(--light-text);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        transition: background-color 0.4s ease, color 0.4s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, 
+            rgba(216, 67, 21, 0.08) 0%, 
+            rgba(0, 188, 212, 0.08) 50%, 
+            rgba(255, 152, 0, 0.08) 100%);
+        pointer-events: none;
+        animation: gradientShift 15s ease infinite;
+    }
+
+    @keyframes gradientShift {
+        0%, 100% { transform: rotate(0deg) translate(0, 0); }
+        50% { transform: rotate(180deg) translate(10px, 10px); }
+    }
+
+    body.dark-mode {
+        background: var(--dark-bg);
+        color: var(--dark-text);
+    }
+
+    /* Theme toggle button */
+    .theme-toggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        border: 3px solid #D84315;
+        background: var(--light-card);
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-light);
+        z-index: 100;
+    }
+
+    body.dark-mode .theme-toggle {
+        background: var(--dark-card);
+        border-color: #00BCD4;
+        box-shadow: var(--shadow-dark);
+    }
+
+    .theme-toggle:hover {
+        transform: rotate(20deg) scale(1.1);
+    }
+
+    .theme-toggle:active {
+        transform: rotate(20deg) scale(0.95);
+    }
+
+    /* Success notification */
+    .notification {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, #00BCD4, #4CAF50);
+        color: #0D2818;
+        padding: 16px 28px;
+        border-radius: 8px;
+        box-shadow: 0 8px 32px rgba(0, 188, 212, 0.4);
+        display: none;
+        z-index: 1000;
+        font-size: 15px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        animation: slideDown 0.5s ease;
+    }
+
+    @keyframes slideDown {
+        from {
+            transform: translateX(-50%) translateY(-100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .login-container {
+        width: 100%;
+        max-width: 420px;
+        background: var(--light-card);
+        padding: 40px;
+        border-radius: 15px;
+        box-shadow: var(--shadow-light);
+        border: 3px solid #D84315;
+        position: relative;
+        z-index: 10;
+        transition: all 0.4s ease;
+    }
+
+    body.dark-mode .login-container {
+        background: var(--dark-card);
+        box-shadow: var(--shadow-dark);
+        border-color: #00BCD4;
+    }
+
+    h2 {
+        text-align: center;
+        margin: 0 0 30px 0;
+        font-size: 36px;
+        color: #D84315;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        text-shadow: 2px 2px 0 #FF9800;
+        animation: glitch 0.3s ease-in-out;
+    }
+
+    body.dark-mode h2 {
+        color: #90EE90;
+        text-shadow: 2px 2px 0 #00BCD4;
+    }
+
+    @keyframes glitch {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-2px); }
+        75% { transform: translateX(2px); }
+    }
+
+    .form-group {
+        margin-bottom: 22px;
+        animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .form-group:nth-child(1) { animation-delay: 0.1s; }
+    .form-group:nth-child(2) { animation-delay: 0.2s; }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 13px;
+        color: #D84315;
+    }
+
+    body.dark-mode label {
+        color: #00BCD4;
+    }
+
+    input {
+        width: 100%;
+        padding: 14px;
+        border: 2px solid #D84315;
+        border-radius: 8px;
+        font-size: 15px;
+        font-family: 'Courier New', monospace;
+        background: white;
+        color: var(--light-text);
+        transition: all 0.3s ease;
+        box-shadow: 3px 3px 0 rgba(216, 67, 21, 0.1);
+    }
+
+    body.dark-mode input {
+        background: rgba(144, 238, 144, 0.05);
+        border-color: var(--accent);
+        color: var(--dark-text);
+        box-shadow: 3px 3px 0 rgba(0, 188, 212, 0.1);
+    }
+
+    input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 20px rgba(0, 188, 212, 0.4), 3px 3px 0 rgba(0, 188, 212, 0.2);
+        transform: translate(-2px, -2px);
+    }
+
+    body.dark-mode input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 20px rgba(0, 188, 212, 0.3), 3px 3px 0 rgba(0, 188, 212, 0.15);
+    }
+
+    button {
+        width: 100%;
+        padding: 14px;
+        border: 3px solid var(--primary);
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--primary), #FF9800);
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-family: 'Courier New', monospace;
+        transition: all 0.3s ease;
+        box-shadow: 4px 4px 0 rgba(216, 67, 21, 0.3);
+        margin-top: 10px;
+    }
+
+    body.dark-mode button {
+        background: linear-gradient(135deg, #00BCD4, #90EE90);
+        border-color: var(--accent);
+        box-shadow: 4px 4px 0 rgba(144, 238, 144, 0.3);
+    }
+
+    button:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 6px 6px 0 rgba(216, 67, 21, 0.4);
+    }
+
+    body.dark-mode button:hover {
+        box-shadow: 6px 6px 0 rgba(144, 238, 144, 0.4);
+    }
+
+    button:active {
+        transform: translate(0, 0);
+        box-shadow: 2px 2px 0 rgba(216, 67, 21, 0.3);
+    }
+
+    body.dark-mode button:active {
+        box-shadow: 2px 2px 0 rgba(144, 238, 144, 0.3);
+    }
+
+    .register {
+        text-align: center;
+        margin-top: 25px;
+        font-size: 14px;
+        letter-spacing: 1px;
+    }
+
+    .register a {
+        color: #D84315;
+        text-decoration: none;
+        font-weight: bold;
+        position: relative;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    body.dark-mode .register a {
+        color: #00BCD4;
+    }
+
+    .register a::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: #D84315;
+        transition: width 0.3s ease;
+    }
+
+    body.dark-mode .register a::after {
+        background: #00BCD4;
+    }
+
+    .register a:hover::after {
+        width: 100%;
+    }
+
+    .register a:hover {
+        transform: translateY(-2px);
+    }
+
+    .error {
+        color: #D84315;
+        text-align: center;
+        margin-bottom: 20px;
+        display: none;
+        padding: 12px;
+        background: rgba(216, 67, 21, 0.1);
+        border: 2px dashed #D84315;
+        border-radius: 8px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        animation: shake 0.5s ease;
+    }
+
+    body.dark-mode .error {
+        background: rgba(0, 188, 212, 0.1);
+        border-color: #00BCD4;
+        color: #00BCD4;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    /* Retro decorative elements */
+    .login-container::before {
+        content: '> _';
+        position: absolute;
+        top: 10px;
+        left: 15px;
+        font-size: 12px;
+        color: #D84315;
+        opacity: 0.5;
+        letter-spacing: 3px;
+    }
+
+    body.dark-mode .login-container::before {
+        color: #00BCD4;
+    }
+
+    .login-container::after {
+        content: '< _';
+        position: absolute;
+        bottom: 10px;
+        right: 15px;
+        font-size: 12px;
+        color: #FF9800;
+        opacity: 0.5;
+        letter-spacing: 3px;
+    }
+
+    @media (max-width: 480px) {
+        .login-container {
+            margin: 20px;
+            padding: 30px 20px;
+        }
+
+        h2 {
+            font-size: 28px;
+            letter-spacing: 2px;
+        }
+
+        .theme-toggle {
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+        }
+    }
+</style>
+
+</head>
+
+<body>
+
+<!-- Theme toggle button -->
+<button class="theme-toggle" id="themeToggle">🌙</button>
+
+<!-- Success notification -->
+<div id="notification" class="notification">
+    Login successful. The next page is under development.
+</div>
+
+<div class="login-container">
+
+    <h2>Login</h2>
+
+    <div id="error" class="error"></div>
+
+    <form id="loginForm">
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input
+                type="email"
+                id="email"
+                name="email"
+                required
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input
+                type="password"
+                id="password"
+                name="password"
+                required
+            >
+        </div>
+
+        <button type="submit">Login</button>
+
+    </form>
+
+    <div class="register">
+        Don't have an account?
+        <a href="/register">Register</a>
+    </div>
+
+</div>
+
+<script>
+    // Theme toggle functionality
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+
+    // Check for saved theme preference or default to light mode
+    const currentTheme = localStorage.getItem('theme') || 'light-mode';
+    if (currentTheme === 'dark-mode') {
+        body.classList.add('dark-mode');
+        themeToggle.textContent = '☀️';
+    }
+
+    themeToggle.addEventListener('click', () => {
+        body.classList.toggle('dark-mode');
+        const theme = body.classList.contains('dark-mode') ? 'dark-mode' : 'light-mode';
+        localStorage.setItem('theme', theme);
+        themeToggle.textContent = theme === 'dark-mode' ? '☀️' : '🌙';
+    });
+
+    document.getElementById("loginForm").addEventListener("submit", async function(event) {
+        event.preventDefault();
+
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        const error = document.getElementById("error");
+        const notification = document.getElementById("notification");
+
+        error.style.display = "none";
+        notification.style.display = "none";
+
+        try {
+            const response = await fetch("/api/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                error.textContent = data.detail || "Invalid email or password";
+                error.style.display = "block";
+                return;
+            }
+            localStorage.setItem("access_token", data.access_token);
+            localStorage.setItem("user_role", data.role);
+            // Login successful
+            notification.style.display = "block";
+            window.location.href = "/chat";
+
+
+        } catch (err) {
+            error.textContent = "Something went wrong. Please try again.";
+            error.style.display = "block";
+        }
+    });
+</script>
+
+</body>
+</html>
