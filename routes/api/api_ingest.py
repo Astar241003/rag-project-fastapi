@@ -48,7 +48,7 @@ async def ingest_data(
     
     # Read and check file size
     file_content_bytes = await file.read()
-    if len(file_content_bytes) > 8 * 1024 * 1024:  # ✅ Fixed
+    if len(file_content_bytes) > 8 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="File size exceeds 8MB")
     
     # Check if already exists
