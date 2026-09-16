@@ -14,11 +14,7 @@ dependencies = [
     "langchain-google-genai>=4.4.0",
     "langchain-pinecone>=0.2.0",
     "langchain-text-splitters>=1.1.2",
-<<<<<<< HEAD
-    "psycopg2=2.9.12",
-=======
     "psycopg2-binary>=2.9.13",
->>>>>>> e1279d5 (change library names and version)
     "pydantic[email]>=2.13.5",
     "pyjwt>=2.13.0",
     "pypdf2>=3.0.1",
