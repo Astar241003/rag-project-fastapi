@@ -13,10 +13,10 @@
         --accent: #00BCD4;
         --dark-bg: #0D2818;
         --dark-card: #1a3d2a;
-        --dark-text: #90EE90;
+        --dark-text: #E8F5E9;
         --light-bg: #F5E6D3;
         --light-card: #FFFAF0;
-        --light-text: #3E2723;
+        --light-text: #2C2C2C;
         --shadow-dark: 0 8px 32px rgba(144, 238, 144, 0.15);
         --shadow-light: 0 8px 32px rgba(216, 67, 21, 0.12);
     }
@@ -45,8 +45,8 @@
 
     .theme-toggle {
         position: fixed;
-        top: 20px;
-        right: 85px;
+        bottom: 20px;
+        right: 20px;
         width: 45px;
         height: 45px;
         border: 3px solid var(--primary);
@@ -86,7 +86,7 @@
         align-items: center;
         justify-content: space-between;
         padding: 0 25px 0 25px;
-        padding-right: 80px;
+        padding-right: 25px;
         box-shadow: 0 4px 12px rgba(216, 67, 21, 0.2);
         border-bottom: 3px solid var(--secondary);
         position: relative;
@@ -200,11 +200,36 @@
         padding: 20px;
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 12px;
+    }
+
+    .message-wrapper {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+        width: fit-content;
+    }
+
+    .message-wrapper.human {
+        align-self: flex-end;
+        flex-direction: row-reverse;
+    }
+
+    .message-wrapper.ai {
+        align-self: flex-start;
+    }
+
+    .message-icon {
+        font-size: 20px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
     }
 
     .message {
-        max-width: 75%;
         padding: 12px 15px;
         border-radius: 8px;
         line-height: 1.5;
@@ -212,25 +237,25 @@
         white-space: pre-wrap;
         word-wrap: break-word;
         border: 2px solid;
+        width: fit-content;
+        max-width: 100%;
     }
 
-    .human {
-        align-self: flex-end;
+    .human .message {
         background: linear-gradient(135deg, var(--primary), var(--secondary));
         color: white;
         border-color: var(--primary);
         border-bottom-right-radius: 2px;
     }
 
-    .ai {
-        align-self: flex-start;
+    .ai .message {
         background: rgba(216, 67, 21, 0.1);
         color: var(--light-text);
         border-color: var(--primary);
         border-bottom-left-radius: 2px;
     }
 
-    body.dark-mode .ai {
+    body.dark-mode .ai .message {
         background: rgba(0, 188, 212, 0.1);
         color: var(--dark-text);
         border-color: var(--accent);
@@ -273,7 +298,7 @@
     }
 
     body.dark-mode .chat-input {
-        background: rgba(144, 238, 144, 0.05);
+        background: rgba(0, 188, 212, 0.05);
         border-color: var(--accent);
         color: var(--dark-text);
         box-shadow: 2px 2px 0 rgba(0, 188, 212, 0.1);
@@ -428,14 +453,14 @@
 
     .files-loading {
         font-size: 12px;
-        color: var(--primary);
+        color: var(--light-text);
         text-align: center;
         padding: 20px 10px;
         font-style: italic;
     }
 
     body.dark-mode .files-loading {
-        color: var(--accent);
+        color: var(--dark-text);
     }
 
     .files-empty {
@@ -444,6 +469,10 @@
         text-align: center;
         padding: 20px 10px;
         opacity: 0.6;
+    }
+
+    body.dark-mode .files-empty {
+        color: var(--dark-text);
     }
 
     .ingestion-container h3 {
@@ -468,7 +497,7 @@
     }
 
     body.dark-mode .ingestion-description {
-        color: #90EE90;
+        color: var(--dark-text);
     }
 
     .file-input {
@@ -480,6 +509,7 @@
         font-family: 'Courier New', monospace;
         cursor: pointer;
         font-size: 12px;
+        color: var(--light-text);
     }
 
     body.dark-mode .file-input {
@@ -608,12 +638,12 @@
             width: 40px;
             height: 40px;
             font-size: 18px;
-            top: 15px;
-            right: 75px;
+            bottom: 15px;
+            right: 15px;
         }
 
-        .header {
-            padding-right: 70px;
+        .message-wrapper {
+            max-width: 100%;
         }
     }
 </style>
@@ -648,8 +678,9 @@
 
         <div class="messages" id="messages">
 
-            <div class="message ai">
-                Hello! Ask me anything about the documents.
+            <div class="message-wrapper ai">
+                <div class="message-icon">🤖</div>
+                <div class="message">Hello! Ask me anything about the documents.</div>
             </div>
 
         </div>
@@ -792,16 +823,21 @@
 
     function addMessage(text, type) {
 
+        const messageWrapper = document.createElement("div");
+        messageWrapper.classList.add("message-wrapper", type);
+
+        const messageIcon = document.createElement("div");
+        messageIcon.classList.add("message-icon");
+        messageIcon.textContent = type === "human" ? "👤" : "🤖";
+
         const message = document.createElement("div");
-
-        message.classList.add(
-            "message",
-            type
-        );
-
+        message.classList.add("message");
         message.textContent = text;
 
-        messages.appendChild(message);
+        messageWrapper.appendChild(messageIcon);
+        messageWrapper.appendChild(message);
+
+        messages.appendChild(messageWrapper);
 
         messages.scrollTop = messages.scrollHeight;
 
