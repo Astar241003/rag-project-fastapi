@@ -1,7 +1,7 @@
 [project]
 name = "practice"
 version = "0.1.0"
-description = "Add your description here"
+description = "A FastAPI-based backend for a Retrieval-Augmented Generation (RAG) agent with the ability to ingest various types of unstructured documents and answer user questions accordingly. The system includes guardrails to ensure high-quality responses from the AI agent."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
